@@ -17,7 +17,7 @@ This directory serves as a comprehensive library of distributed systems concepts
 | **[API Design](./api-design-patterns.md)** | REST, gRPC, and GraphQL trade-offs and versioning. |
 | **[Rate Limiting](./rate-limiting.md)** | Protecting services via Token Bucket, Leaky Bucket, and Distributed limits. |
 | **[Health Checks](./health-checks.md)** | Maintaining high availability, failover, and circuit breaking. |
-| **[Caching Strategies](./caching-strategies.md)** | Optimization patterns like Cache-aside, Read-through, and Write-behind. |
+| **[Caching Strategies](./caching-strategies.md)** | Optimization patterns like Cache-aside, Read-through, and Write-through. |
 | **[Cache Eviction](./cache-eviction.md)** | Managing memory constraints with LRU, LFU, and TTL. |
 | **[CDN Basics](./cdn-fundamentals.md)** | Global content delivery and edge computing. |
 
@@ -47,7 +47,7 @@ This directory serves as a comprehensive library of distributed systems concepts
 | :--- | :--- |
 | **[LSM-Trees](./storage-lsm-trees.md)** | Optimizing for high-throughput writes (SSTables and MemTables). |
 | **[Inverted Index](./inverted-index.md)** | The engine behind full-text search and keyword lookups. |
-| **[Storage Tiering](./storage-tiering.md)** | Cost-efficiency through Hot, Warm, and Cold data architectures. |
+| **[Data Tiering](./data-tiering.md)** | Cost-efficiency through Hot, Warm, and Cold data architectures. |
 | **[Probabilistic Structures](./probabilistic-data-structures.md)** | Memory-efficient membership checks using Bloom Filters & Sketches. |
 
 ---
