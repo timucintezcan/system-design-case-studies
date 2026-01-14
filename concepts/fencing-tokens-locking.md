@@ -55,8 +55,3 @@ Instead of locking a resource before using it (Pessimistic), we let anyone try t
 | **Fencing Tokens** | When using distributed lock managers (Zookeeper/Etcd). | Maximum safety for cross-service coordination. |
 
 ---
-
-## 🔗 Related Concepts
-* [Delivery Guarantees](./delivery-guarantees.md)
-* [Outbox Pattern & CDC](./outbox-pattern-cdc.md)
-* **LSM-Trees** (Phase 5 - Next)
