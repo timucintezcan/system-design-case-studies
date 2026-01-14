@@ -4,6 +4,26 @@ In a traditional distributed system, mapping data to nodes using a simple hash f
 
 > **Staff SRE Insight:** "Standard modulo hashing is an operational nightmare for stability. If you add one server to a 10-node cluster using `mod n`, you end up remapping nearly 90% of your data. Consistent Hashing reduces this remapping to only `1/n` of the data, preventing massive 'cache miss' storms and unnecessary data migration."
 
+
+                          
+                           (0)
+                      /     |     \
+                   /        |        \
+                /           |           \
+            Node 4      [Key A]        Node 1
+             (O)           * (O)
+            /                              \
+           /                                \
+       [Key C]                            [Key B]
+          * *
+           \                                /
+            \                              /
+             (O)           * (O)
+            Node 3      [Key D]        Node 2
+                \           |           /
+                   \        |        /
+                      \     |     /
+
 ---
 
 ## 🏗️ 1. The Hash Ring Concept
