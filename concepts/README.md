@@ -7,27 +7,30 @@ This directory serves as a comprehensive library of distributed systems concepts
 ## 🗺️ Knowledge Index
 
 ### 🧱 Infrastructure & Traffic Management
-*Building the entry point: How to direct traffic and reduce latency at the edge.*
+*Building the entry point: How to direct traffic, discover services, and protect the system.*
 
 | Topic | Focus |
 | :--- | :--- |
 | **[Load Balancing](./load-balancing.md)** | Distributing traffic across L4/L7 layers and consistent hashing. |
+| **[API Gateway & BFF](./api-gateway-bff.md)** | Centralized entry points and client-specific backend adaptations. |
+| **[Service Discovery & Mesh](./service-discovery-mesh.md)** | Dynamic service registration and sidecar-based traffic management. |
 | **[API Design](./api-design-patterns.md)** | REST, gRPC, and GraphQL trade-offs and versioning. |
 | **[Rate Limiting](./rate-limiting.md)** | Protecting services via Token Bucket, Leaky Bucket, and Distributed limits. |
 | **[Health Checks](./health-checks.md)** | Maintaining high availability, failover, and circuit breaking. |
-| **[Caching Strategies](./caching-strategies.md)** | Optimization patterns like Cache-aside, Write-through, and Write-behind. |
+| **[Caching Strategies](./caching-strategies.md)** | Optimization patterns like Cache-aside, Read-through, and Write-behind. |
 | **[Cache Eviction](./cache-eviction.md)** | Managing memory constraints with LRU, LFU, and TTL. |
 | **[CDN Basics](./cdn-fundamentals.md)** | Global content delivery and edge computing. |
 
 ---
 
 ### ⚖️ Distributed Data & Integrity
-*Moving beyond a single database: Ensuring correctness and atomicity at scale.*
+*Moving beyond a single database: Ensuring correctness, atomicity, and consensus at scale.*
 
 | Topic | Focus |
 | :--- | :--- |
 | **[Sharding & Partitioning](./sharding.md)** | Horizontal scaling and the "Hot Partition" problem. |
 | **[Replication](./replication.md)** | Leader-Follower, Multi-Leader, and Leaderless architectures. |
+| **[NoSQL: Choosing the Right Store](./nosql-choosing-store.md)** | Key-Value, Document, Columnar, and Graph database trade-offs. |
 | **[Index Optimization](./indexing.md)** | B-Trees, Hash Indexes, and physical data layout. |
 | **[Consensus](./consensus-algorithms.md)** | Distributed agreement protocols like Paxos and Raft. |
 | **[Idempotency](./idempotency.md)** | Ensuring safe retries and state consistency. |
@@ -65,7 +68,7 @@ This directory serves as a comprehensive library of distributed systems concepts
 
 | Topic | Focus |
 | :--- | :--- |
-| **[Context Propagation](./context-propagation.md)** | Distributed tracing across microservice boundaries. |
+| **[Context Propagation](./context-propagation.md)** | Distributed tracing across microservice boundaries via Trace IDs. |
 | **[Metrics Cardinality](./metrics-cardinality.md)** | Optimizing monitoring costs and time-series query performance. |
 | **[Sampling Strategies](./sampling-strategies.md)** | Intelligent trace selection via Head and Tail sampling. |
 
