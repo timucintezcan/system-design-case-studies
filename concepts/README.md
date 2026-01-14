@@ -22,8 +22,8 @@ This directory contains deep-dives into the core concepts used in our case studi
 
 ## ⚖️ Phase 4: Distributed Systems & Data Integrity
 - [ ] [Idempotency & Fencing Tokens](idempotency.md)
-- [ ] [Consensus Algorithms (Raft/Paxos)](consensus.md)
-- [ ] [Clock Skew & TrueTime](clock-skew.md)
+- [ ] [Consensus Algorithms (Raft/Paxos)](consensus-algorithms.md)
+- [ ] [Clock Skew & TrueTime](clock-skew-vector-clocks.md)
 
 ---
-*Note: Concepts marked with [x] are completed. Others are being documented.*
+
