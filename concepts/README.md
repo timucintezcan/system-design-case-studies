@@ -12,6 +12,8 @@ This directory serves as a comprehensive library of distributed systems concepts
 | Topic | Focus |
 | :--- | :--- |
 | **[Load Balancing](./load-balancing.md)** | Distributing traffic across L4/L7 layers and consistent hashing. |
+| **[API Design](./api-design-patterns.md)** | REST, gRPC, and GraphQL trade-offs and versioning. |
+| **[Rate Limiting](./rate-limiting.md)** | Protecting services via Token Bucket, Leaky Bucket, and Distributed limits. |
 | **[Health Checks](./health-checks.md)** | Maintaining high availability, failover, and circuit breaking. |
 | **[Caching Strategies](./caching-strategies.md)** | Optimization patterns like Cache-aside, Write-through, and Write-behind. |
 | **[Cache Eviction](./cache-eviction.md)** | Managing memory constraints with LRU, LFU, and TTL. |
@@ -25,12 +27,13 @@ This directory serves as a comprehensive library of distributed systems concepts
 | Topic | Focus |
 | :--- | :--- |
 | **[Sharding & Partitioning](./sharding.md)** | Horizontal scaling and the "Hot Partition" problem. |
-| **[Replication](./replication.md)** | Leader-Follower, Multi-Leader, and Quorum-based consistency. |
+| **[Replication](./replication.md)** | Leader-Follower, Multi-Leader, and Leaderless architectures. |
 | **[Index Optimization](./indexing.md)** | B-Trees, Hash Indexes, and physical data layout. |
-| **[Idempotency & Consensus](./idempotency.md)** | Ensuring safe retries and distributed agreement (Paxos/Raft). |
-| **[Outbox Pattern & CDC](./outbox-pattern-cdc.md)** | Solving the "Dual-Write" problem to ensure eventual consistency. |
+| **[Consensus](./consensus-algorithms.md)** | Distributed agreement protocols like Paxos and Raft. |
+| **[Idempotency](./idempotency.md)** | Ensuring safe retries and state consistency. |
+| **[Outbox Pattern & CDC](./outbox-pattern-cdc.md)** | Solving the "Dual-Write" problem for eventual consistency. |
 | **[Delivery Guarantees](./delivery-guarantees.md)** | At-Most-Once, At-Least-Once, and Exactly-Once semantics. |
-| **[Fencing Tokens & Locking](./fencing-tokens-locking.md)** | Handling concurrency with distributed mutexes and monotonic tokens. |
+| **[Fencing Tokens & Locking](./fencing-tokens-locking.md)** | Handling concurrency with distributed mutexes and tokens. |
 
 ---
 
