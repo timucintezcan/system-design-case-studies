@@ -59,4 +59,4 @@ Based on **[Capacity Math](../concepts/capacity-estimation-math.md)** and **[Per
   * In terms of network: $2.5\ GB/s \times 8 \approx 20\ Gbps$ (excluding headers).
 * **Daily Raw Volume (Calculation):**
   $$5 \times 10^6 \text{ clicks/sec} \times 86,400 \text{ sec/day} \times 500 \text{ bytes} \approx 216 \text{ TB / day (Raw)}$$
-  This high volume necessitates a robust **[Data Tiering](../concepts/data-tiering.md)** strategy to manage storage costs.
+  This high volume necessitates a robust **[Data Tiering](../concepts/storage-tiering.md)** strategy to manage storage costs.
