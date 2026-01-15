@@ -28,7 +28,8 @@ This directory serves as a comprehensive library of distributed systems concepts
 
 | Topic | Focus |
 | :--- | :--- |
-| **[Sharding & Partitioning](./sharding.md)** | Horizontal scaling and the "Hot Partition" problem. |
+| **[Capacity Math](./capacity-estimation-math.md)** | Estimating QPS, WPS, and Throughput (GB/s to Gbps) conversions. |
+| **[Sharding & Partitioning](./sharding-partitioning.md)** | Horizontal scaling and the "Hot Partition" problem. |
 | **[Replication](./replication.md)** | Leader-Follower, Multi-Leader, and Leaderless architectures. |
 | **[NoSQL: Choosing the Right Store](./nosql-choosing-store.md)** | Key-Value, Document, Columnar, and Graph database trade-offs. |
 | **[Index Optimization](./indexing.md)** | B-Trees, Hash Indexes, and physical data layout. |
