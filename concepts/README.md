@@ -29,6 +29,7 @@ This directory serves as a comprehensive library of distributed systems concepts
 | Topic | Focus |
 | :--- | :--- |
 | **[Capacity Math](./capacity-estimation-math.md)** | Estimating QPS, WPS, and Throughput (GB/s to Gbps) conversions. |
+| **[Performance Benchmarks](./infrastructure-performance-benchmarks.md)** | Modern Hardware Limits (Kernel, NIC, RAM, Disk Latency). |
 | **[Sharding & Partitioning](./sharding-partitioning.md)** | Horizontal scaling and the "Hot Partition" problem. |
 | **[Replication](./replication.md)** | Leader-Follower, Multi-Leader, and Leaderless architectures. |
 | **[NoSQL: Choosing the Right Store](./nosql-choosing-store.md)** | Key-Value, Document, Columnar, and Graph database trade-offs. |
