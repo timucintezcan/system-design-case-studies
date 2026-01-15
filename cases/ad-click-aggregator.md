@@ -181,5 +181,122 @@ In this phase, we move from theoretical hardware units to a resilient, distribut
     3.  **Partial Aggregation:** Instead of sending raw clicks across oceans, aggregate them *regionally* into 1-minute buckets.
     4.  **Global Merge:** Send only the aggregated results (e.g., `ad_123: 5000 clicks`) to the central billing region. 
     * *Result:* This reduces cross-region data transfer costs by **>99%** and hides the RTT from the user.
+ 
+> ### 💡 Staff Architect Note: Data Gravity & Physics
+> The shift from **Raw Data Transfer** to **Aggregated Data Transfer** is the most critical architectural decision in this design. 
+> 
+> * **Respecting Physics:** By aggregating locally, we acknowledge the **[Speed of Light](../concepts/infrastructure-performance-benchmarks.md)** constraints. We move the "computation" to the data (at the Edge) rather than moving the "massive data" to a central computation point.
+> * **Fiscal Responsibility:** Cross-region data transfer is one of the highest costs in cloud infrastructure. Reducing the payload from raw events (216 TB/day) to aggregated summaries (GBs/day) reduces egress costs by **>99%**.
+> * **Resiliency:** Regional clusters act as "bulkheads," ensuring that a failure in the Central Billing region does not stop click ingestion globally.
 
 ---
+
+## 5. Architecture & Path Analysis
+
+In this phase, we move from hardware math to the logical and physical journey of data through the system.
+
+### High-Level Architecture
+The system follows a **Regional Ingestion / Global Analysis** pattern to minimize latency and maximize availability.
+
+
+
+### The Write Path (The Journey of a Click)
+Tracing a click from a user's phone to the final database record:
+
+1. **Edge Entry:** The click hits an **[Edge Proxy](../concepts/load-balancing.md)** (Envoy/NGINX). TLS is terminated here to reduce RTT. The proxy validates the **[Idempotency](../concepts/idempotency.md)** token to prevent double-counting.
+2. **Buffer (The Log):** The proxy produces the event to a **Regional [Kafka](../concepts/backpressure-flow-control.md)** cluster. 
+    * *Hardware Path:* NIC -> Kernel Buffer -> App Memory -> **[LSM-Tree](../concepts/storage-lsm-trees.md)** WAL on NVMe SSD.
+3. **Compute (The Aggregator):** A stream processing engine (e.g., Flink) consumes the raw events.
+    * It maintains a "Hot State" in memory for the current **[Stream Window](../concepts/stream-windowing-watermarks.md)**.
+    * It handles late-arriving events using **Watermarks**.
+4. **Commit (The Serving Layer):** Every minute, the processor flushes the aggregated counts to an **OLAP Database** (ClickHouse). 
+    * This uses **[Data Tiering](../concepts/data-tiering.md)**: Aggregated counts stay in SSDs for fast querying, while raw logs are moved to S3 for long-term audit.
+  
+```mermaid
+graph TD
+    subgraph Client_Layer [Client Layer]
+        A[Mobile/Web SDK] -->|HTTPS POST| B[Anycast IP / Global Accelerator]
+    end
+
+    subgraph Ingestion_Layer [Ingestion Layer - Regional]
+        B --> C[Edge Proxy / Envoy]
+        C -->|TLS Termination| D[Load Balancer]
+        D --> E[Ingestion Service]
+        E -->|Validate & Rate Limit| F{Idempotency Check}
+    end
+
+    subgraph Persistence_Layer [Persistence Layer - Kafka]
+        F -->|New Event| G[Kafka Producer]
+        G --> H[Kafka Broker]
+        H -->|1. NIC -> Kernel| I[Page Cache]
+        I -->|2. Background Flush| J[NVMe WAL - LSM Tree]
+        H -->|3. Replication| K[Follower Replicas]
+    end
+
+    subgraph Processing_Layer [Processing Layer - Flink]
+        H --> L[Stream Consumer]
+        L --> M[Windowing & Watermarks]
+        M -->|Aggregated Result| N[OLAP Sink - ClickHouse]
+    end
+
+    style J fill:#f96,stroke:#333,stroke-width:2px
+    style N fill:#f96,stroke:#333,stroke-width:2px
+```
+
+
+### The Read Path (The Query Journey)
+When an advertiser checks their dashboard:
+
+1. **API Gateway:** Receives the `GET /v1/stats` request.
+2. **Scatter-Gather:** The query service identifies which shards (based on `ad_id`) hold the data.
+3. **Columnar Scan:** ClickHouse performs a high-speed scan of the relevant **[LSM-Tree](../concepts/storage-lsm-trees.md)** parts. Since data is stored by time, it only reads the specific blocks for the requested time range.
+4. **Aggregation Merge:** If the query spans multiple shards or windows, a final merge is performed in memory before returning the result.
+
+
+```mermaid
+graph TD
+    subgraph Interface [User Interface]
+        A[Advertiser Dashboard] -->|Query: ad_id=123, range=Last 60 days| B[Query API]
+    end
+
+    subgraph Coordinator [Query Coordinator & Router]
+        B --> C[Query Planner]
+        C --> D{Route by Time Range}
+    end
+
+    subgraph Tier_Hot [HOT TIER - Last 1h]
+        D -->|Very Recent| H1[Redis / ClickHouse RAM]
+        H1 --> H2[In-Memory Scan]
+    end
+
+    subgraph Tier_Warm [WARM TIER - Last 30d]
+        D -->|Active Data| W1[Scatter to ClickHouse Shards]
+        W1 --> W2[Parallel NVMe SSD Scan]
+        W2 --> W3[Local Aggregation]
+    end
+
+    subgraph Tier_Cold [COLD TIER - Historical]
+        D -->|Archive Data| C1[External Tables - S3/GCS]
+        C1 --> C2[Parquet Columnar Scan]
+    end
+
+    subgraph Aggregation [Gather & Final Merge]
+        H2 --> G[Final Merge Point]
+        W3 --> G
+        C2 --> G
+        G --> J[Format JSON & Cache Result]
+    end
+
+    J --> B
+
+    %% Styles for Tiering
+    style H1 fill:#ff4d4d,stroke:#333,color:#fff
+    style W1 fill:#ffa64d,stroke:#333
+    style C1 fill:#4d94ff,stroke:#333,color:#fff
+    style G fill:#f96,stroke:#333,stroke-width:2px
+```
+
+
+### Observability & Reliability
+* **White-box Metrics:** We track "Consumer Lag" in Kafka. If lag increases, it’s a signal that our compute layer is under-provisioned.
+* **Health Checks:** Using **[Backpressure](../concepts/backpressure-flow-control.md)** signals, the ingestion layer can tell the Load Balancer to shed traffic if the internal buffers are full.
