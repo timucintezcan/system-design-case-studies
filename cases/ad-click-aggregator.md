@@ -60,3 +60,47 @@ Based on **[Capacity Math](../concepts/capacity-estimation-math.md)** and **[Per
 * **Daily Raw Volume (Calculation):**
   $$5 \times 10^6 \text{ clicks/sec} \times 86,400 \text{ sec/day} \times 500 \text{ bytes} \approx 216 \text{ TB / day (Raw)}$$
   This high volume necessitates a robust **[Data Tiering](../concepts/storage-tiering.md)** strategy to manage storage costs.
+
+
+## 2. SLO, NFR & Data Modeling
+
+### SLOs (Service Level Objectives)
+* **Availability:** **99.99%** for the Ingestion API. Every click is revenue; downtime directly impacts the bottom line.
+* **Latency:** * **Ingestion:** $p99 < 50ms$ to ensure mobile SDKs can "fire-and-forget" without blocking client resources.
+    * **Query:** $p99 < 200ms$ for internal dashboard responsiveness.
+* **Durability:** **99.999999999% (11 nines)**. Once a click is acknowledged by the ingestion layer, it must never be lost.
+* **Consistency:** * **[Eventual Consistency](../concepts/cap-theorem.md#%EF%B8%8F-consistency-models-the-spectrum)** is acceptable for real-time dashboards (a few seconds of lag is expected).
+    * **Strong Consistency** is required for the final daily billing settlement and financial reporting.
+
+### Non-Functional Requirements (NFR)
+* **Fault Tolerance:** The system must survive a zonal failure without data loss or significant performance degradation.
+* **Idempotency:** The ingestion layer must support **[Idempotency](../concepts/idempotency.md)** to handle SDK/Proxy retries without double-counting clicks.
+* **Scalability:** Must scale horizontally to handle 10x peak traffic during high-traffic events (e.g., Black Friday or global sports events).
+
+### Data Modeling
+To balance massive write throughput with fast analytical queries, we adopt a multi-layered storage strategy.
+
+#### 1. Message Bus (Hot Layer)
+* **Technology:** **[Kafka](../concepts/backpressure-flow-control.md)** or similar distributed log.
+* **Partition Key:** `ad_id` (Ensures all clicks for the same ad are processed by the same consumer for local state aggregation).
+* **Retention:** 7 days for replayability.
+
+#### 2. Serving Layer (OLAP)
+* **Technology:** ClickHouse or Druid (Optimized for **[LSM-Trees](../concepts/storage-lsm-trees.md)** and high-speed columnar scans).
+* **Schema (Aggregated Table):**
+
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `ad_id` | `String` | Partition Key / Primary Key |
+| `window_start` | `Timestamp` | Start of the **[Stream Window](../concepts/stream-windowing-watermarks.md)** (1m/5m) |
+| `click_count` | `UInt64` | Total number of clicks in the window |
+| `unique_users` | `HyperLogLog` | Probabilistic cardinality for unique user estimation |
+
+#### 3. Deep Archive (Cold Layer)
+* **Technology:** **[Blob Storage (S3/GCS)](../concepts/storage-tiering.md)**.
+* **Format:** Columnar Parquet/Avro for cost-efficient batch reconciliation and historical audits.
+
+### Trade-off: CAP Theorem
+We prioritize **Availability** and **Partition Tolerance (AP)** for the ingestion path. Rejecting a click due to a consistency check results in direct revenue loss. We bridge the gap to **Strong Consistency** via background reconciliation and a batch processing layer for final billing.
+
+---
