@@ -300,3 +300,45 @@ graph TD
 ### Observability & Reliability
 * **White-box Metrics:** We track "Consumer Lag" in Kafka. If lag increases, it’s a signal that our compute layer is under-provisioned.
 * **Health Checks:** Using **[Backpressure](../concepts/backpressure-flow-control.md)** signals, the ingestion layer can tell the Load Balancer to shed traffic if the internal buffers are full.
+
+---
+
+## 6. Stress-Test & Vulnerability Analysis (The Grilling)
+
+In this final phase, we stress-test our architectural assumptions against real-world chaos to ensure the system doesn't just work, but stays resilient.
+
+### 1. The "Hot Shard" Problem (Viral Ad Event)
+* **Scenario:** A global celebrity shares an ad. The specific `ad_id: "superstar_promo"` receives 1M+ clicks/sec instantly.
+* **The Risk:** Since we shard by `ad_id`, all this traffic hits a single Kafka partition and a single Stream Processing node. This node will experience CPU/RAM exhaustion while the rest of the cluster sits idle.
+* **Architectural Fix:** **[Salting Strategy](../concepts/sharding-partitioning.md)**. If an `ad_id` exceeds a specific throughput threshold, we append a random salt to the key (e.g., `ad_id_1`, `ad_id_2`). This spreads the load across multiple nodes. The final counts are re-aggregated during the "Gather" phase of the query.
+
+### 2. The "Poison Pill" (Malformed Data)
+* **Scenario:** A bug in an upstream SDK sends a malformed or non-JSON payload into the stream.
+* **The Risk:** The Stream Processor (Flink) throws an exception and crashes while trying to deserialize the message. Upon restart, it reads the same message and crashes again, creating an infinite crash loop that halts the entire pipeline.
+* **Architectural Fix:** **Dead Letter Queue (DLQ)**. We wrap the deserialization logic in a try-catch block. Any message that fails schema validation is routed to a separate "DLQ Topic" for manual inspection, allowing the main pipeline to continue processing.
+
+### 3. Cascading Failures & Backpressure
+* **Scenario:** The OLAP Storage layer (ClickHouse) experiences a slowdown due to a heavy background merge process.
+* **The Risk:** The Stream Processor cannot flush data, its internal buffers fill up, and it exerts **[Backpressure](../concepts/backpressure-flow-control.md)** on Kafka. If the Ingestion API keeps accepting new clicks at 5M/s, the entire memory of the ingestion fleet will be exhausted.
+* **Architectural Fix:** **Load Shedding & Circuit Breaking**. We monitor the Kafka "Consumer Lag." If the lag crosses a critical threshold, the Ingestion API begins returning `HTTP 503` (Service Unavailable) to the SDKs. This drops traffic at the door to save the core infrastructure from a total collapse.
+
+### 4. Clock Skew & Late Arriving Data
+* **Scenario:** A mobile device has its system clock set to 1970 or 2050, or a user goes into a tunnel and their clicks arrive 2 hours late.
+* **The Risk:** These events can mess up time-window aggregations and "Watermark" logic, leading to inaccurate billing.
+* **Architectural Fix:** **[Watermarks & Allowed Lateness](../concepts/stream-windowing-watermarks.md)**. We define a strict "Allowed Lateness" (e.g., 10 minutes). Anything arriving beyond that is logged to the Cold Tier (S3) for later batch reconciliation but excluded from real-time "Hot" counts to maintain dashboard performance.
+
+---
+
+
+
+## 🏆 Final Architecture Summary
+
+| Feature | Solution | Benefit |
+| :--- | :--- | :--- |
+| **Ingestion** | Anycast + Edge Proxy | Global < 50ms latency |
+| **Durability** | Kafka WAL (RF=3) | 11-nines data safety |
+| **Throughput** | LSM-Tree (Sequential I/O) | 2.5 GB/s sustained writes |
+| **Cost** | Hot/Warm/Cold Tiering | >90% savings on storage |
+| **Accuracy** | Idempotency + Bloom Filters | Prevents double-billing |
+
+---
