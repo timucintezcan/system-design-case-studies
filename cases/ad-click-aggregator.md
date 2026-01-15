@@ -174,7 +174,7 @@ In this phase, we move from theoretical hardware units to a resilient, distribut
 
 ### Iteration 3: Global Scale & The Speed of Light (RTT)
 * **The Latency Problem:** Users are global. A mobile user in Singapore clicking an ad hosted in US-East will face a ~200ms Round Trip Time (RTT). Long-haul TCP connections are prone to **[Backpressure](../concepts/backpressure-flow-control.md)** and packet loss.
-* **The Bottleneck:** **[Speed of Light](../concepts/infrastructure-performance-benchmarks.md)**. We cannot provide a 50ms ingestion SLO globally from a single region.
+* **The Bottleneck:** **[Speed of Light](../concepts/infrastructure-performance-benchmarks.md#-2-storage--memory-the-latency-hierarchy)**. We cannot provide a 50ms ingestion SLO globally from a single region.
 * **The Fix: Edge Ingestion & Regional Aggregation**
     1.  **Edge POPs:** Terminate SSL/TLS at the Edge to reduce the handshake RTT.
     2.  **Regional Ingestion:** Deploy regional clusters (US, EU, APAC). 
