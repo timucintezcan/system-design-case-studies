@@ -65,6 +65,7 @@ Every analysis in this repo follows a rigorous process:
 2. **The Physics of Data:** Calculating hardware limits before picking a tool.
 3. **The Trade-off Matrix:** Evaluating Consistency, Availability, and Latency.
 4. **AI-Resilience:** Designing systems that can feed and be managed by AI agents.
+5. **Framework** 📖 Check out the full **[Hybrid Staff Architect Framework](./FRAMEWORK.md)** for a detailed breakdown of my methodology.
 
 **"The code may be generated, but the system is designed."**
 
