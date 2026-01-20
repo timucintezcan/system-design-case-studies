@@ -36,7 +36,7 @@ I am releasing 20+ case studies focusing on decision-making and system integrati
 * **[Distributed Monitoring (TSDB)](./cases/tsdb.md)** ⏳
 
 ### 🛠️ Core Infrastructure
-* **[Distributed Task Scheduler](./cases/task-scheduler.md)** ⏳
+* **[Distributed Task Scheduler](./cases/task-scheduler.md)** 🚀 **(Live)**
 * **[Google Load Balancer (Maglev/Anycast)](./cases/google-lb.md)** ⏳
 * **[Distributed Key-Value Store](./cases/kv-store.md)** ⏳
 * **[Distributed ID Generation](./cases/id-generation.md)** ⏳
