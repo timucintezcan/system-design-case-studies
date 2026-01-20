@@ -252,7 +252,7 @@ When a user calls `POST /v1/tasks`, the data travels as follows:
 2. **Validation:** Service checks auth and validates the payload/cron expression.
 3. **Quorum Commit:** * The service generates a `task_id` and writes the record to the **Metadata Store (DB)**.
     * **[Quorum Write (W=2, N=3)](../concepts/consistency-levels.md):** The DB leader replicates the WAL (Write Ahead Log) to at least one follower synchronously.
-    * *Hardware Path:* NIC -> Kernel Space -> App Memory -> DB Buffer -> **[NVMe WAL (Sequential Append)](../concepts/lsm-trees.md)**.
+    * *Hardware Path:* NIC -> Kernel Space -> App Memory -> DB Buffer -> **[NVMe WAL (Sequential Append)](../concepts/storage-lsm-trees.md)**.
 4. **Acknowledgment:** Once the quorum is reached, the user receives `202 Accepted`.
 
 
@@ -333,7 +333,7 @@ graph TD
 ### 📊 Observability & Reliability
 * **Execution Lag:** Metric measuring `Actual_Trigger_Time - Scheduled_Time`. This is our most critical SLO monitor.
 * **Sweeper Health:** Monitor if the Redis ZSET is being populated correctly. If the sweeper dies, execution stops.
-* **[Backpressure](../concepts/backpressure.md):** If the execution fleet's p99 latency rises, the API layer starts rate-limiting new task creation to protect the Metadata Store.
+* **[Backpressure](../concepts/backpressure-flow-control.md):** If the execution fleet's p99 latency rises, the API layer starts rate-limiting new task creation to protect the Metadata Store.
 * **Dead Letter Queue (DLQ):** Tasks that exhaust all retries are moved to a DLQ for manual inspection/recovery.
 
 ---
@@ -346,7 +346,7 @@ In this final phase, we subject our architecture to "The Grilling"—testing how
 * **Scenario:** Millions of tasks are scheduled exactly for `09:00:00 UTC`.
 * **The Risk:** At exactly 09:00:00, every regional worker pool issues a `ZRANGEBYSCORE` and then thousands of concurrent `UPDATE` commands to the Metadata DB. This leads to **[Lock Contention](../concepts/locking-strategies.md)** and potential DB exhaustion.
 * **Architectural Fix:** * **Jitter:** Introduce a random delay (e.g., 0-500ms) at the worker level.
-    * **Rate Limiting:** Implement execution-side **[Backpressure](../concepts/backpressure.md)** to ensure we don't exceed the target service's capacity or our own DB's IOPS.
+    * **Rate Limiting:** Implement execution-side **[Backpressure](../concepts/backpressure-flow-control.md)** to ensure we don't exceed the target service's capacity or our own DB's IOPS.
 
 ### 2. The "Hot Shard" Tenant
 * **Scenario:** A single massive tenant (e.g., a huge marketing platform) schedules 80% of the total 10B tasks.
